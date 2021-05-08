@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import { createRange } from './Utilities';
+import { adjustRange, createRange } from './Utilities';
 
 export default function Cell(props: CellProperties) {
     const display = typeof props.value === 'number' ? (
@@ -13,7 +13,7 @@ export default function Cell(props: CellProperties) {
         ))
     );
     return (
-        <TouchableOpacity onPress={() => props.onPress()} style={[styles.container, { width: props.size, height: props.size }]}>
+        <TouchableOpacity onPress={() => props.onPress()} style={[styles.container, { width: props.size, height: props.size, backgroundColor: calculateColor(props.index.x, props.index.y, props.index.z) }]}>
             {display}
         </TouchableOpacity>
     );
@@ -24,11 +24,16 @@ interface CellProperties {
     notes: number[];
     onPress: () => void;
     size: number;
+    index: { x: number, y: number, z: number };
+}
+
+function calculateColor(x: number, y: number, z: number) {
+    return `rgb(${adjustRange(0, 8, 0, 255, x)},${adjustRange(0, 8, 0, 255, y)},${adjustRange(0, 8, 0, 255, z)})`;
 }
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: '#000',
+        // backgroundColor: 'rgb(0,0,0)',
         borderColor: '#555',
         borderWidth: 1,
         flexDirection: 'row',
