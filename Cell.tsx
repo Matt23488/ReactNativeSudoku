@@ -28,8 +28,8 @@ interface CellProperties {
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: '#fff',
-        borderColor: '#000',
+        backgroundColor: '#000',
+        borderColor: '#555',
         borderWidth: 1,
         flexDirection: 'row',
         alignItems: 'center',
@@ -37,10 +37,10 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
     },
     valueDisplay: {
-        color: '#000',
+        color: '#999',
     },
     noteDisplay: {
-        color: '#000',
+        color: '#b00b69',
         alignItems: 'center',
         justifyContent: 'center',
         position: 'relative',
