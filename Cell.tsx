@@ -6,14 +6,14 @@ export default function Cell(props: CellProperties) {
     const display = typeof props.value === 'number' ? (
         <Text style={[styles.valueDisplay, { fontSize: Math.round(props.size * 0.75)}]}>{props.value}</Text>
     ) : (
-        [...createRange(9, 1)].map(i => (
+        createRange(9, 1).map(i => (
             <Text key={i} style={[styles.noteDisplay, { width: props.size / 3 - 1, height: props.size / 3 - 1, fontSize: (Math.round(props.size * 0.25)) }]}>
                 {props.notes.find(n => n === i)}
             </Text>
         ))
     );
     return (
-        <TouchableOpacity onPress={() => props.onPress()} style={[styles.container, { width: props.size, height: props.size, backgroundColor: calculateColor(props.index.x, props.index.y, props.index.z) }]}>
+        <TouchableOpacity onPress={() => props.onPress()} style={[styles.container, { width: props.size, height: props.size/*, backgroundColor: calculateColor(props.index.x, props.index.y, props.index.z)*/ }]}>
             {display}
         </TouchableOpacity>
     );
@@ -33,9 +33,9 @@ function calculateColor(x: number, y: number, z: number) {
 
 const styles = StyleSheet.create({
     container: {
-        // backgroundColor: 'rgb(0,0,0)',
-        borderColor: '#555',
-        borderWidth: 1,
+        backgroundColor: 'rgb(0,0,0)',
+        // borderColor: '#555',
+        // borderWidth: 1,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
