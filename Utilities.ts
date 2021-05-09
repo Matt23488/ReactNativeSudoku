@@ -19,3 +19,9 @@ export function adjustRange(oldFrom: number, oldTo: number, newFrom: number, new
 export function flatten2DArray<T>(arr: T[][]): T[] {
     return ([] as T[]).concat.apply<T[], T[][], T[]>([], arr);
 }
+
+export function replaceCopy<T>(arr: T[][], i: number, j: number, value: T) {
+    const copy = arr.map(inner => inner.map(obj => obj));
+    copy[i][j] = value;
+    return copy;
+}
