@@ -15,7 +15,6 @@ export default class Sudoku extends React.Component<SudokuProperties, SudokuStat
     }
 
     private onCellPressed(block: number, index: number) {
-        const current = this.state.gridValues[block][index];
         this.setState({ gridValues: replaceCopy(this.state.gridValues, block, index, this.state.valueSelectValue) });
     }
 
@@ -23,33 +22,13 @@ export default class Sudoku extends React.Component<SudokuProperties, SudokuStat
         this.setState({ valueSelectValue: value === this.state.valueSelectValue ? 0 : value });
     }
 
-    private getStyles() {
-        const { width, height } = Dimensions.get('window');
-        const flexDirection = width > height ? 'row' : 'column';
-        const paddingTop = width > height ? 0 : 50;
-        const paddingLeft = width > height ? 50 : 0;
-        return {
-            valueSelect: {
-                container: ((flexDirection === 'row') ? {
-                    flexDirection: 'column',
-                    paddingLeft: 30,
-                } : {
-                    flexDirection: 'row',
-                    paddingBottom: 30,
-                }) as StyleProp<ViewStyle>,
-            },
-            grid: { flexDirection, paddingTop, paddingLeft },
-        };
-    }
-
     public render() {
-        const calculatedStyles = this.getStyles();
         const valueSelect = <ValueSelect selectedValue={this.state.valueSelectValue} styles={styles} onPress={this.onValueSelected.bind(this)} />;
         return (
-            <View style={[styles.container, calculatedStyles.grid as StyleProp<ViewStyle>]}>
-                {calculatedStyles.grid.flexDirection === 'column' && valueSelect}
+            <View style={styles.container}>
+                {(height > width) && valueSelect}
                 <Grid styles={styles} values={createRange(9).map(i => createRange(9).map(j => this.state.gridValues[i][j]))} onCellPressed={this.onCellPressed.bind(this)} />
-                {calculatedStyles.grid.flexDirection === 'row' && valueSelect}
+                {(width > height) && valueSelect}
             </View>
         );
     }
@@ -61,15 +40,16 @@ interface SudokuState {
     valueSelectValue: number;
 }
 
-const cellBorderWidth = 1;
-const blockBorderWidth = 3;
-const gridBorderWidth = 3;
 const cellScaleFactor = 0.75;
-
 const { width, height } = Dimensions.get('window');
 const minDim = Math.min(width, height);
 const tenCells = minDim - minDim % 10;
 const cellSize = tenCells / 10 * cellScaleFactor;
+
+const cellBorderWidth = 1;
+const blockBorderWidth = 3;
+const gridBorderWidth = 3;
+
 const blockSize = (cellSize + cellBorderWidth * 2) * 3;
 const gridSize = (blockSize + blockBorderWidth * 2) * 3 + gridBorderWidth * 2;
 
