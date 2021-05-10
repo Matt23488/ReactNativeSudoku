@@ -1,5 +1,6 @@
 import React from 'react';
-import { Dimensions, StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
+import { Dimensions, Text, StyleSheet, TouchableOpacity, View, ViewStyle } from 'react-native';
+import { FontAwesome } from '@expo/vector-icons';
 import Grid from './Grid';
 import { createRange, replaceCopy } from './Utilities';
 import ValueSelect from './ValueSelect';
@@ -9,13 +10,23 @@ export default class Sudoku extends React.Component<SudokuProperties, SudokuStat
         super(props);
 
         this.state = {
-            gridValues: Array(9).fill(Array(9).fill(0)),
+            history: [{ gridValues: Array(9).fill(Array(9).fill(0)) }],
             valueSelectValue: 0,
         };
     }
 
+    private get currentGridState() {
+        return this.state.history[this.state.history.length - 1];
+    }
+
+    private onUndo() {
+        if (this.state.history.length === 1) return;
+        this.setState({ history: this.state.history.slice(0, -1) })
+    }
+
     private onCellPressed(block: number, index: number) {
-        this.setState({ gridValues: replaceCopy(this.state.gridValues, block, index, this.state.valueSelectValue) });
+        const gridValues = replaceCopy(this.currentGridState.gridValues, block, index, this.state.valueSelectValue);
+        this.setState({ history: this.state.history.concat({ gridValues }) });
     }
 
     private onValueSelected(value: number) {
@@ -26,8 +37,9 @@ export default class Sudoku extends React.Component<SudokuProperties, SudokuStat
         const valueSelect = <ValueSelect selectedValue={this.state.valueSelectValue} styles={styles} onPress={this.onValueSelected.bind(this)} />;
         return (
             <View style={styles.container}>
+                <TouchableOpacity onPress={this.onUndo.bind(this)} style={styles.undoBtn}><FontAwesome name="undo" size={cellSize * 0.6} color="white" /></TouchableOpacity>
                 {(height > width) && valueSelect}
-                <Grid styles={styles} values={createRange(9).map(i => createRange(9).map(j => this.state.gridValues[i][j]))} onCellPressed={this.onCellPressed.bind(this)} />
+                <Grid styles={styles} values={createRange(9).map(i => createRange(9).map(j => this.currentGridState.gridValues[i][j]))} onCellPressed={this.onCellPressed.bind(this)} />
                 {(width > height) && valueSelect}
             </View>
         );
@@ -36,7 +48,7 @@ export default class Sudoku extends React.Component<SudokuProperties, SudokuStat
 
 interface SudokuProperties {}
 interface SudokuState {
-    gridValues: number[][];
+    history: { gridValues: number[][]; }[]
     valueSelectValue: number;
 }
 
@@ -59,8 +71,8 @@ const styles = StyleSheet.create({
     },
     valueSelectContainer: {
         flexDirection: width > height ? 'column' : 'row',
-        paddingLeft: width > height ? (cellSize * 0.75) : 0,
-        paddingBottom: width > height ? 0 : (cellSize * 0.75),
+        marginLeft: width > height ? (cellSize * 0.75) : 0,
+        marginBottom: width > height ? 0 : (cellSize * 0.75),
         height: width > height ? gridSize : undefined,
         width: width > height ? undefined : gridSize,
         justifyContent: 'space-between',
@@ -81,6 +93,17 @@ const styles = StyleSheet.create({
     },
     valueSelectTxtSelected: {
         color: '#fff',
+    },
+    undoBtn: {
+        width: gridSize / 10,
+        height: gridSize / 10,
+        backgroundColor: '#000',
+        borderColor: '#000',
+        borderWidth: 1,
+        marginRight: width > height ? (cellSize * 0.75) : 0,
+        marginBottom: width > height ? 0 : (cellSize * 0.75),
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     grid: {
         flexDirection: 'row',
