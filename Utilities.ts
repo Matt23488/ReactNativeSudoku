@@ -1,6 +1,6 @@
 export function createRange(count = 10, start = 0, step = 1) {
     const result: number[] = [];
-    for (let i = start; i < start + count; i += step) result.push(i);
+    for (let i = start; i < start + (count * step); i += step) result.push(i);
     return result;
 }
 
@@ -24,4 +24,12 @@ export function replaceCopy<T>(arr: T[][], i: number, j: number, value: T) {
     const copy = arr.map(inner => inner.map(obj => obj));
     copy[i][j] = value;
     return copy;
+}
+
+export function skip<T>(arr: T[], count: number) {
+    return arr.filter((_, i) => i >= count);
+}
+
+export function take<T>(arr: T[], count: number) {
+    return arr.filter((_, i) => i < count);
 }

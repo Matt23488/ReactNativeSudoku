@@ -2,17 +2,44 @@ import React from 'react';
 import { Dimensions, Text, StyleSheet, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import Grid from './Grid';
-import { createRange, replaceCopy } from './Utilities';
+import { createRange, flatten2DArray, replaceCopy } from './Utilities';
 import ValueSelect from './ValueSelect';
+import Graph from './Graph';
+
+export interface SudokuGraphNode {
+    i: number;
+    j: number;
+    getValue: () => number;
+}
 
 export default class Sudoku extends React.Component<SudokuProperties, SudokuState> {
+    private readonly _graph = new Graph<SudokuGraphNode>();
+    private readonly _graphNodes: SudokuGraphNode[];
+
     public constructor(props: SudokuProperties) {
         super(props);
 
+        // const gridValues = createRange(9).map(i => createRange(9).map(j => Number(`${i}${j}`)));
+        const gridValues = Array(9).fill(Array(9).fill(0));
         this.state = {
-            history: [{ gridValues: Array(9).fill(Array(9).fill(0)) }],
+            history: [{ gridValues }],
             valueSelectValue: 0,
         };
+        
+        this._graphNodes = flatten2DArray(this.currentGridState.gridValues.map((inner, i) => inner.map((_, j) => ({
+            i,
+            j,
+            getValue: () => this.currentGridState.gridValues[i][j]
+        }))));
+
+        // columns
+        createRange(3).forEach(i => createRange(3).map(j => this._graph.connectMany(...this._graphNodes.filter(node => node.i % 3 === i && node.j % 3 === j))));
+        // rows
+        createRange(3, 0, 3).forEach(i => createRange(3, 0, 3).map(j => this._graph.connectMany(...this._graphNodes.filter(node => node.i >= i && node.i < i + 3 && node.j >= j && node.j < j + 3))));
+        // blocks
+        createRange(9).forEach(i => this._graph.connectMany(...this._graphNodes.filter(node => node.i === i)));
+
+        console.log(this._graph);
     }
 
     private get currentGridState() {
@@ -33,13 +60,23 @@ export default class Sudoku extends React.Component<SudokuProperties, SudokuStat
         this.setState({ valueSelectValue: value === this.state.valueSelectValue ? 0 : value });
     }
 
+    private checkCollision(a: SudokuGraphNode, b: SudokuGraphNode) {
+        const val = a.getValue();
+        return val !== 0 && val === b.getValue();
+    }
+
     public render() {
+        const collisions = this._graph.connectedNodesWhere(this.checkCollision);
         const valueSelect = <ValueSelect selectedValue={this.state.valueSelectValue} styles={styles} onPress={this.onValueSelected.bind(this)} />;
         return (
             <View style={styles.container}>
                 <TouchableOpacity onPress={this.onUndo.bind(this)} style={styles.undoBtn}><FontAwesome name="undo" size={cellSize * 0.6} color="white" /></TouchableOpacity>
                 {(height > width) && valueSelect}
-                <Grid styles={styles} values={createRange(9).map(i => createRange(9).map(j => this.currentGridState.gridValues[i][j]))} onCellPressed={this.onCellPressed.bind(this)} />
+                <Grid
+                    styles={styles}
+                    errors={[...collisions]}
+                    values={createRange(9).map(i => createRange(9).map(j => this.currentGridState.gridValues[i][j]))} onCellPressed={this.onCellPressed.bind(this)}
+                />
                 {(width > height) && valueSelect}
             </View>
         );
@@ -135,5 +172,8 @@ const styles = StyleSheet.create({
     },
     gridText: {
         fontSize: cellSize * 0.75,
-    }
+    },
+    gridTextError: {
+        color: 'red',
+    },
 });
